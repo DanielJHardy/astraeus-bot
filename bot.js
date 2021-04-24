@@ -4,6 +4,8 @@ const dotenv = require('dotenv').config();
 
 const Database = require('./database/database.js');
 const VRMLscraper = require('./utility/vrmlscraper');
+const SlashCommandsHandler = require('./utility/slashcommandshandler');
+
 
 // create a new Discord client
 const client = new Discord.Client();
@@ -19,6 +21,8 @@ for (const file of eventFiles) {
 	const event = require(`./events/${file}`);
 	if (event.once) {
 		client.once(event.name, (...args) => event.execute(...args, client));
+	} else if (event.ws) {
+		client.ws.on(event.name, async (interaction) => event.execute(interaction, client));
 	} else {
 		client.on(event.name, (...args) => event.execute(...args, client));
 	}
@@ -41,6 +45,11 @@ client.database = new Database();
 
 //setup scraper
 client.scraper = new VRMLscraper();
+
+//setup slash commands handler
+client.slashCMDs = new SlashCommandsHandler(client);
+client.testGuildID = '827175524836835338';
+
 
 // login to Discord with your app's token
 client.login(process.env.TOKEN);

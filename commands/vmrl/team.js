@@ -1,19 +1,20 @@
-const request = require('request');
-const cheerio = require('cheerio');
 const Discord = require('discord.js');
 const {bot_colour} = require('../../config.json');
-const { executeTeam } = require('./matches');
 
 const acceptableDays = ['all', 'today', 'tomorrow', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
 module.exports = {
+    isSlash: true,
 	name: 'team',
-    usages: [
-        {
-            syntax: '<name>',
-            description: `Gets a VRML team's information`,
-            args: [{ name: '<name>', description: 'The name of the VRML team'}]
-        }
+    description: "Gets a VRML team's information",
+    options: [
+      {
+        type: 3,
+        name: "name",
+        description: "The name of the VRML team",
+        default: false,
+        required: true
+      }
     ],
 
     createTeamEmbed(team) {
@@ -53,11 +54,17 @@ module.exports = {
         return embed;
     },
 
-    async executeTeamName(message, args)
+    execute(interaction, args, client)
     {
-        const teamName = args.join(' '); //combine arguments to form team name
-        const client = message.client;
+        client.slashCMDs.DeferResponse({}, interaction);
+
+        this.executeTeamName(interaction, args, client);
+    },
+
+    async executeTeamName(interaction, args, client)
+    {
         let teamLink = null;
+        const teamName = args.name;
 
         //get team link from storage if have it and use that
         const db_team = client.database.getTeam(teamName);
@@ -67,8 +74,10 @@ module.exports = {
             //otherwise get from standings page
             const teamInfo = await client.scraper.scrape_TeamInfo_standings(teamName)//this.scrapeTeamLink(body, teamName);
             if(teamInfo === null) {
-                message.reply(`Could not find a team with that name.`);// team doesn't exist
-                message.channel.stopTyping();
+                client.slashCMDs.EditResponse(
+                    {
+                        embeds: [new Discord.MessageEmbed().setDescription(`Couldn't find team **${teamName}**`).setColor('#d92121')]
+                    }, interaction);
                 return;
             }
 
@@ -92,22 +101,6 @@ module.exports = {
 
         //send reply with team data
         const embed = this.createTeamEmbed(team);
-        message.channel.send(embed);
-        message.channel.stopTyping();
-    },
-
-	execute(message, args) {
-		
-        //const standings = 'https://vrmasterleague.com/EchoArena/Standings/2NluW_UsAmhquDWQX-CfFg2';
-        const client = message.client;
-
-        //make sure a team name is included
-        if(!args[0]) return message.reply(`Missing team identifier. Usage: ${client.prefix}${this.name} ${this.usages[0].syntax}`);
-
-        //provide feedback to the user that the command is processing
-        message.channel.startTyping()
-
-        // execute teamname version
-        this.executeTeamName(message, args);
-	},
+        client.slashCMDs.EditResponse({ embeds: [embed]}, interaction);
+    }
 };
