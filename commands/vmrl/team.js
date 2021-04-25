@@ -10,7 +10,6 @@ module.exports = {
         type: 3,
         name: "name",
         description: "The name of the VRML team",
-        default: false,
         required: true
       }
     ],
