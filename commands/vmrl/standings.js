@@ -6,7 +6,7 @@ const divisions = ['master', 'diamond', 'gold', 'silver', 'bronze'];
 const DEFAULT_NUM_STANDINGS = 10;
 
 module.exports = {
-    isSlash: true,
+    global: true,
 	name: 'standings',
     description: "Displays the OCE standings",
     options: [
@@ -17,7 +17,7 @@ module.exports = {
         options: [
             {
                 "name": "Amount",
-                "description": "Amount of teams to include",
+                "description": "Amount of teams to include. Defaults to 10 if omitted",
                 "type": 4,
                 "required": false,
             },

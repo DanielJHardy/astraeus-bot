@@ -2,7 +2,7 @@ const Discord = require('discord.js');
 const {bot_colour} = require('../../config.json');
 
 module.exports = {
-    isSlash: true,
+    global: true,
 	name: 'team',
     description: "Gets a VRML team's information",
     options: [
