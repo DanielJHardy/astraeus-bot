@@ -8,13 +8,15 @@ module.exports = {
 		const testing = true;
 		if(testing)
 		{
-			const guild = client.testGuildID;
+			const guild = client.homeGuildID;
 
 			for (command of client.commands) {
 
 				if(command[1].isSlash)
 				{
 					client.slashCMDs.AddCommand(command[1], guild);
+
+					if(command[1].permissions) client.slashCMDs.SetCommandPermissions(command[1].permissions, command[1].name, guild);
 				}
 				
 			}

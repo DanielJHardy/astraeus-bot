@@ -11,8 +11,9 @@ const SlashCommandsHandler = require('./utility/slashcommandshandler');
 const client = new Discord.Client();
 
 //load config variables
-const { prefix } = require('./config.json');
+const { prefix, homeGuild } = require('./config.json');
 client.prefix = prefix;
+client.homeGuildID = homeGuild;
 
 //load events
 const eventFiles = fs.readdirSync('./events').filter(file => file.endsWith('.js'));
@@ -48,7 +49,6 @@ client.scraper = new VRMLscraper();
 
 //setup slash commands handler
 client.slashCMDs = new SlashCommandsHandler(client);
-client.testGuildID = '827175524836835338';
 
 
 // login to Discord with your app's token

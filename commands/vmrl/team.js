@@ -1,8 +1,6 @@
 const Discord = require('discord.js');
 const {bot_colour} = require('../../config.json');
 
-const acceptableDays = ['all', 'today', 'tomorrow', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-
 module.exports = {
     isSlash: true,
 	name: 'team',

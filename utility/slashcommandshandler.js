@@ -27,11 +27,11 @@ module.exports = class SlashCommandsHandler {
           }});
     }
 
-    Respond(responseData, interaction)
+    Respond(response, interaction)
     {
         this.client.api.interactions(interaction.id, interaction.token).callback.post({data: {
             type: 4,
-            data: responseData
+            data: response
           }});
     }
 
@@ -51,5 +51,35 @@ module.exports = class SlashCommandsHandler {
                 data: response
             }
         );
+    }
+
+    async SetCommandPermissions(permissions, commandName, guild = null)
+    {
+        const cmdID = await this.GetCommandID(commandName, guild);
+
+        const packet = {
+            data: { permissions: permissions },
+            headers: { Authorization: `Bot ${process.env.TOKEN}`}
+        };
+
+        if(guild) this.client.api.applications(this.client.user.id).guilds(guild).commands(cmdID).permissions.put(packet);
+        else this.client.api.applications(this.client.user.id).commands(cmdID).permissions.put(packet);
+    }
+
+    async GetCommandID(commandName, guild)
+    {
+        //get slash commands
+        let commands;
+        if(guild) {
+            commands = await this.client.api.applications(this.client.user.id).guilds(guild).commands.get(); //guild commands
+        }
+        else commands = await this.client.api.applications(this.client.user.id).commands.get(); //global commands
+
+        //look for command
+        for(const cmd of commands)
+        {
+            if(cmd.name == commandName)    //found command
+                return cmd.id;
+        }
     }
 }
