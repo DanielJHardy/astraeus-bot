@@ -1,26 +1,51 @@
 const Discord = require('discord.js');
 
 const acceptableDays = ['all', 'today', 'tomorrow', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+const {bot_colour, fail_colour} = require('../../config.json');
 
 module.exports = {
+    global: true,
 	name: 'matches',
-    aliases: ['games'],
-    usages: [
-        {
-            syntax: '<>',
-            description: `Displays a list of today's VRML matches`,
-            args: []
-        },
-        {
-            syntax: '<day>',
-            description: 'Displays list of VRML matches for a given day',
-            args: [{ name: '<day>', description: 'The day you want matches from.', values: acceptableDays}]
-        },
-        {
-            syntax: '<team>',
-            description: `Displays this week's VRML matches of a team`,
-            args: [{ name: '<team>', description: 'Name of the team'}]
-        },
+    description: "Displays a list of upcoming OCE matches",
+    options: [
+      {
+        type: 1,
+        name: "Day",
+        description: "Displays upcoming matches for a particular day. Defaults to Today",
+        options: [
+            {
+                "name": "when",
+                "description": "The day to get matches for",
+                "type": 3,
+                "required": false,
+                "choices": [
+                    { "name": "All", "value": "all" },
+                    { "name": "Today", "value": "today" },
+                    { "name": "Tomorrow", "value": "tomorrow" },
+                    { "name": "Sunday", "value": "sunday" },
+                    { "name": "Monday", "value": "monday" },
+                    { "name": "Tuesday", "value": "tuesday" },
+                    { "name": "Wednesday", "value": "wednesday" },
+                    { "name": "Thursday", "value": "thursday" },
+                    { "name": "Friday", "value": "friday" },
+                    { "name": "Saturday", "value": "saturday" },
+                ]
+            },
+        ]
+      },
+      {
+        type: 1,
+        name: "Team",
+        description: "Displays a team's upcoming matches",
+        options: [
+            {
+                "name": "name",
+                "description": "Name of the team",
+                "type": 3,
+                "required": true,
+            },
+        ]
+      },
     ],
 
     getTime(match) {
@@ -53,7 +78,7 @@ module.exports = {
         else embed.setTitle(`Today's OCE Matches`);
 
         embed.setDescription(`[View the VRML matches page](${address})`);
-        embed.setColor('#6be1ff');
+        embed.setColor(bot_colour);
         embed.setFooter('Only includes the first 8 matches.')
 
         let matchesRecorded = 0;
@@ -93,26 +118,32 @@ module.exports = {
             embed.addField(match.blue_team.name, `[Match Page](https://vrmasterleague.com${match.match_link})`, true);
         }
 
+        //if no matches
+        if(embed.fields)
+        {
+            embed.addField('\u200b','```diff\n- No matches found -\n```');
+            embed.setColor(fail_colour);
+        }
+
         return embed;
     },
 
-    async executeTeam(message, args) {
-        //combine args to get team name
-        const teamName = args.join(' '); //combine arguments to form team name
+    async executeTeam(interaction, teamName, client) {
 
         //check if team is in database
-        const team = message.client.database.getTeam(teamName);
-        if(team)
+        const team = client.database.getTeam(teamName);
+        if(team)    //no need to scrape team link
         {           
-            const matches = await message.client.scraper.scrape_Matches_team(team.link);//this.scrapeMatchesTeam(body);
-            let embed = this.createMatchesEmbed(matches, 'all', team.name);
+            const matches = await client.scraper.scrape_Matches_team(team.link);
 
-            message.channel.send(embed);
-            message.channel.stopTyping();
+            //reply embed
+            let embed = this.createMatchesEmbed(matches, 'all', team.name);
+            client.slashCMDs.EditResponse({embeds: [embed]},interaction);        
         }
-        else {
-            //get teaminfo from standings pate
-            let info = await message.client.scraper.scrape_TeamInfo_standings(teamName);
+        else //not in database
+        { 
+            //get teaminfo from standings page
+            let info = await client.scraper.scrape_TeamInfo_standings(teamName);
             let link = null, name = null;
             if(info) {
                 link = info.link; 
@@ -120,48 +151,39 @@ module.exports = {
             }
             
             //no such team
-            if(link === null) {
-                message.reply(`Could not find a team with that name.`);// team doesn't exist
-                message.channel.stopTyping();
-                return;
-            }
+            if(link === null)  return client.slashCMDs.EditResponse({embeds: [new Discord.MessageEmbed().setDescription(`Couldn't find team **${teamName}**`).setColor('#d92121')]},interaction);
 
             //get list of matches from team page
-            const matches = await message.client.scraper.scrape_Matches_team(link);
-            let embed = this.createMatchesEmbed(matches, 'all', name);
+            const matches = await client.scraper.scrape_Matches_team(link);
 
-            message.channel.send(embed);
-            message.channel.stopTyping();
+            // create embed and return
+            let embed = this.createMatchesEmbed(matches, 'all', name);
+            client.slashCMDs.EditResponse({embeds: [embed]},interaction);
         }
     },
 
-    async executeDay(message, args) {
+    async executeDay(interaction, when, client) {
 
         //get matches and store in array
-        const matches = await message.client.scraper.scrape_ScheduledMatches_matches();//this.getScheduledMatches(body);
+        const matches = await client.scraper.scrape_ScheduledMatches_matches();//this.getScheduledMatches(body);
 
-        let embed = null;
-        if(args[0]) //if there was an argument 
-        {
-            embed = this.createMatchesEmbed(matches, args[0].toLowerCase());
-        }
-        else { //default to today
-            embed = this.createMatchesEmbed(matches, 'today');
-        }
-
-        message.channel.send(embed);
-        message.channel.stopTyping();
+        //create embed and return
+        embed = this.createMatchesEmbed(matches, when);
+        client.slashCMDs.EditResponse({embeds: [embed]},interaction);
     },
 
-	execute(message, args) {
+	execute(interaction, args, client) {
 		
-        //provide feedback that the command is running
-        message.channel.startTyping();
+        client.slashCMDs.DeferResponse({}, interaction);
 
         //if not a valid arg for <day>, run <team>
-        if(args[0] && !acceptableDays.includes(args[0].toLowerCase())) this.executeTeam(message,args);
+        if(args.team) this.executeTeam(interaction, args.team.name, client);
 
         //otherwise run <day> / <>
-        else this.executeDay(message, args);
+        else if(args.day)
+        {
+            if(args.day.when) this.executeDay(interaction, args.day.when, client);
+            else this.executeDay(interaction, 'today', client);
+        }
 	},
 };

@@ -7,6 +7,12 @@ module.exports = {
         //commands
         if (!message.content.startsWith(client.prefix) || message.author.bot) return;
 
+
+
+        //disable commands
+        return;
+
+
 	    const args = message.content.slice(client.prefix.length).trim().split(/ +/);
 	    const commandName = args.shift().toLowerCase();
 

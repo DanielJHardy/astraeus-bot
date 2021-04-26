@@ -1,32 +1,67 @@
 const Discord = require('discord.js');
 
 const {bot_colour} = require('../../config.json');
+const {divisions: emojiDivs} = require('../../emojis.json');
 const divisions = ['master', 'diamond', 'gold', 'silver', 'bronze'];
 
 const DEFAULT_NUM_STANDINGS = 10;
 
 module.exports = {
+    global: true,
 	name: 'standings',
-    aliases: ['ladder'],
-    usages: [
-        {
-            syntax: '<>',
-            description: 'Displays the top 10 teams in OCE.',
-            args: []
-        },
-        {
-            syntax: '<number>',
-            description: 'Displays the top **n** teams, where **n** is the amount of teams to display.',
-            args: [{ name: '<number>', description: 'The number of teams to display.'}]
-        },
-        {
-            syntax: '<divison>',
-            description: 'Displays the teams of a divison.',
-            args: [{name: '<division>', description: 'The division of the teams to display.', values: divisions}]
-        }
+    description: "Displays the OCE standings",
+    options: [
+      {
+        type: 1,
+        name: "Top",
+        description: "Displays the Top teams. Defaults to Top 10",
+        options: [
+            {
+                "name": "Amount",
+                "description": "Amount of teams to include.",
+                "type": 4,
+                "required": false,
+            },
+        ]
+      },
+      {
+        type: 1,
+        name: "Division",
+        description: "Gets all the teams in a division",
+        options: [
+            {
+                "name": "tier",
+                "description": "The division to get",
+                "type": 3,
+                "required": true,
+                "choices": [
+                    {
+                        "name": "Master",
+                        "value": "master"
+                    },
+                    {
+                        "name": "Diamond",
+                        "value": "diamond"
+                    },
+                    {
+                        "name": "Gold",
+                        "value": "gold"
+                    },
+                    {
+                        "name": "Silver",
+                        "value": "silver"
+                    },
+                    {
+                        "name": "Bronze",
+                        "value": "bronze"
+                    }
+                ]
+            },
+        ]
+      },
     ],
 
-    createLadderEmbed(ladder, mode)
+    createLadderEmbed(ladder, mode, client)
     {
         const embed = new Discord.MessageEmbed();
         const standings = 'https://vrmasterleague.com/EchoArena/Standings/2NluW_UsAmhquDWQX-CfFg2';
@@ -52,11 +87,13 @@ module.exports = {
                 col_mmr[colIndex] = '';
             }
             
+            const divEmoji = client.emojis.cache.get(emojiDivs[row.division.toLowerCase()]);
             //add rows
             col_team[colIndex] += `**${row.position} |** [${row.teamName}](${VRMLdomain+row.teamLink})\n`;
-            col_division[colIndex] += `${row.division}\n`;
+            col_division[colIndex] += `${divEmoji}\n`;
             col_mmr[colIndex] += `${row.mmr}\n`;
         }
+
 
         //add initial fields
         embed.addField('Pos | Team', col_team[0], true);
@@ -74,56 +111,49 @@ module.exports = {
         return embed;
     },
 
-    async executeTopN(message, amount)
+    async executeTopN(interaction, amount, client)
     {
-        const client = message.client;
-
         //scrape ladder
         let ladder = await client.scraper.scrape_Ladder_standings();
 
         //filter list to only include the first <amount> teams
         ladder = ladder.slice(0,amount);
 
-        //create message/embed
-        const embed = this.createLadderEmbed(ladder, 'top');
-        //reply
-        message.channel.send(embed);
-        message.channel.stopTyping();
+        //create message/embed and reply
+        const embed = this.createLadderEmbed(ladder, 'top', client);
+        client.slashCMDs.EditResponse({ embeds: [embed]}, interaction);
     },
 
-    async executeDivision(message, division)  
+    async executeDivision(interaction, division, client)  
     {
-        const client = message.client;
-
         //scrape ladder
         let ladder = await client.scraper.scrape_Ladder_standings();
 
         //filter list to only include teams in <division>
         ladder = ladder.filter(row => row.division.toLowerCase() == division);
 
-        //create message/embed
-        const embed = this.createLadderEmbed(ladder, 'division');
-        //reply
-        message.channel.send(embed);
-        message.channel.stopTyping();
+        //create message/embed and reply
+        const embed = this.createLadderEmbed(ladder, 'division', client);
+        client.slashCMDs.EditResponse({ embeds: [embed]}, interaction);
     },
 
-	execute(message, args) {
+	execute(interaction, args, client) {
 
-        message.channel.startTyping();
+        client.slashCMDs.DeferResponse({}, interaction);
 
-        //Default Top 10
-        if(!args[0]) return this.executeTopN(message, DEFAULT_NUM_STANDINGS);
-        
-        //Top N
-        const n = parseInt(args[0]);
-        if(Number.isInteger(n)) return this.executeTopN(message, n);
-
-        //division
-        if(divisions.includes(args[0].toLowerCase())) return this.executeDivision(message, args[0].toLowerCase())
-
-        //not a command usage
-        message.reply(`That isn't an acceptable argument for that command. Use the **help** command to see usage information.`);
-        message.channel.stopTyping();
+        if(args.top) //top sub-command
+        {
+            if(args.top.amount) //amount specified
+            {
+                this.executeTopN(interaction, args.top.amount, client);
+            }
+            else{   //default amount
+                this.executeTopN(interaction, DEFAULT_NUM_STANDINGS, client);
+            }
+        }
+        else if(args.division) //division sub-command
+        {
+            this.executeDivision(interaction, args.division.tier, client)
+        }
     }
 };
