@@ -1,5 +1,7 @@
 const Discord = require('discord.js');
 const {bot_colour} = require('../../config.json');
+const {ranks} = require('../../emojis.json');
+
 
 module.exports = {
     global: true,
@@ -14,7 +16,7 @@ module.exports = {
       }
     ],
 
-    createTeamEmbed(team) {
+    createTeamEmbed(team, client) {
 
         const embed = new Discord.MessageEmbed();
 
@@ -31,10 +33,14 @@ module.exports = {
         for (let mi = 0; mi < team.members.length; mi++) {
             const player = team.members[mi];
 
+            //location flag emoji
             let flagEmoji = '';
             if(player.location !== undefined) flagEmoji = `:flag_${player.location.toLowerCase()}:`;
 
-            playersText += `${indent}*[${player.rank}]* [${player.name}](https://vrmasterleague.com${player.link}) ${flagEmoji}\n`;
+            //rank emoji
+            const rankEmoji = client.emojis.cache.get(ranks[player.rank.toLowerCase()]);
+
+            playersText += `${indent}${rankEmoji} [${player.name}](https://vrmasterleague.com${player.link}) ${flagEmoji}\n`;
         }
         embed.addField('Members:', playersText);
 
@@ -97,7 +103,7 @@ module.exports = {
         }
 
         //send reply with team data
-        const embed = this.createTeamEmbed(team);
+        const embed = this.createTeamEmbed(team, client);
         client.slashCMDs.EditResponse({ embeds: [embed]}, interaction);
     }
 };

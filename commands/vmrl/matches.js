@@ -1,6 +1,7 @@
 const Discord = require('discord.js');
 
 const acceptableDays = ['all', 'today', 'tomorrow', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+const {bot_colour, fail_colour} = require('../../config.json');
 
 module.exports = {
     global: true,
@@ -10,11 +11,11 @@ module.exports = {
       {
         type: 1,
         name: "Day",
-        description: "Displays upcoming matches for a particular day",
+        description: "Displays upcoming matches for a particular day. Defaults to Today",
         options: [
             {
                 "name": "when",
-                "description": "The day to get matches for. Defaults to Today if omitted",
+                "description": "The day to get matches for",
                 "type": 3,
                 "required": false,
                 "choices": [
@@ -77,7 +78,7 @@ module.exports = {
         else embed.setTitle(`Today's OCE Matches`);
 
         embed.setDescription(`[View the VRML matches page](${address})`);
-        embed.setColor('#6be1ff');
+        embed.setColor(bot_colour);
         embed.setFooter('Only includes the first 8 matches.')
 
         let matchesRecorded = 0;
@@ -115,6 +116,13 @@ module.exports = {
             embed.addField(match.orange_team.name, time, true);
             embed.addField('vs', '\u200b', true);
             embed.addField(match.blue_team.name, `[Match Page](https://vrmasterleague.com${match.match_link})`, true);
+        }
+
+        //if no matches
+        if(embed.fields)
+        {
+            embed.addField('\u200b','```diff\n- No matches found -\n```');
+            embed.setColor(fail_colour);
         }
 
         return embed;

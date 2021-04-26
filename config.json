@@ -1,5 +1,6 @@
 {
     "prefix": "!",
     "bot_colour": "#6be1ff",
+    "fail_colour": "#d92121",
     "homeGuild": "827175524836835338"
 }

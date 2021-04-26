@@ -1,6 +1,7 @@
 const Discord = require('discord.js');
 
 const {bot_colour} = require('../../config.json');
+const {divisions: emojiDivs} = require('../../emojis.json');
 const divisions = ['master', 'diamond', 'gold', 'silver', 'bronze'];
 
 const DEFAULT_NUM_STANDINGS = 10;
@@ -13,11 +14,11 @@ module.exports = {
       {
         type: 1,
         name: "Top",
-        description: "Displays the Top teams",
+        description: "Displays the Top teams. Defaults to Top 10",
         options: [
             {
                 "name": "Amount",
-                "description": "Amount of teams to include. Defaults to 10 if omitted",
+                "description": "Amount of teams to include.",
                 "type": 4,
                 "required": false,
             },
@@ -60,7 +61,7 @@ module.exports = {
       },
     ],
 
-    createLadderEmbed(ladder, mode)
+    createLadderEmbed(ladder, mode, client)
     {
         const embed = new Discord.MessageEmbed();
         const standings = 'https://vrmasterleague.com/EchoArena/Standings/2NluW_UsAmhquDWQX-CfFg2';
@@ -86,11 +87,13 @@ module.exports = {
                 col_mmr[colIndex] = '';
             }
             
+            const divEmoji = client.emojis.cache.get(emojiDivs[row.division.toLowerCase()]);
             //add rows
             col_team[colIndex] += `**${row.position} |** [${row.teamName}](${VRMLdomain+row.teamLink})\n`;
-            col_division[colIndex] += `${row.division}\n`;
+            col_division[colIndex] += `${divEmoji}\n`;
             col_mmr[colIndex] += `${row.mmr}\n`;
         }
+
 
         //add initial fields
         embed.addField('Pos | Team', col_team[0], true);
@@ -117,7 +120,7 @@ module.exports = {
         ladder = ladder.slice(0,amount);
 
         //create message/embed and reply
-        const embed = this.createLadderEmbed(ladder, 'top');
+        const embed = this.createLadderEmbed(ladder, 'top', client);
         client.slashCMDs.EditResponse({ embeds: [embed]}, interaction);
     },
 
@@ -130,7 +133,7 @@ module.exports = {
         ladder = ladder.filter(row => row.division.toLowerCase() == division);
 
         //create message/embed and reply
-        const embed = this.createLadderEmbed(ladder, 'division');
+        const embed = this.createLadderEmbed(ladder, 'division', client);
         client.slashCMDs.EditResponse({ embeds: [embed]}, interaction);
     },
 
