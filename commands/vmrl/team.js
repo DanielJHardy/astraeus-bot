@@ -1,6 +1,6 @@
 const Discord = require('discord.js');
 const {bot_colour} = require('../../config.json');
-const {ranks} = require('../../emojis.json');
+const {ranks, divisions} = require('../../emojis.json');
 
 
 module.exports = {
@@ -9,19 +9,41 @@ module.exports = {
     description: "Gets a VRML team's information",
     options: [
       {
-        type: 3,
-        name: "name",
-        description: "The name of the VRML team",
-        required: true
-      }
+        type: 1,
+        name: "byName",
+        description: "Displays a VRML team",
+        options: [
+            {
+                type: 3,
+                name: "name",
+                description: "The name of the VRML team",
+                required: true
+            }
+        ]
+      },
+      {
+        type: 1,
+        name: "byPlayer",
+        description: "Displays the VRML team of a player",
+        options: [
+            {
+                "name": "player",
+                "description": "The name of the player",
+                "type": 3,
+                "required": true,
+            },
+        ]
+      },
     ],
 
     createTeamEmbed(team, client) {
 
         const embed = new Discord.MessageEmbed();
 
+        const divisionEmoji = client.emojis.cache.get(divisions[team.division.toLowerCase()]);
+
         embed.setTitle(team.name);
-        embed.setDescription(`**Division:** ${team.division} | **MMR:** ${team.mmr}`);
+        embed.setDescription(`**Division:** ${divisionEmoji} | **MMR:** ${team.mmr}`);
         embed.setURL(`https://vrmasterleague.com${team.page_link}`);
         embed.setThumbnail(`https://vrmasterleague.com${team.logo}`);
         embed.setColor(bot_colour);

@@ -119,7 +119,7 @@ module.exports = {
         }
 
         //if no matches
-        if(embed.fields)
+        if(embed.fields.length == 0)
         {
             embed.addField('\u200b','```diff\n- No matches found -\n```');
             embed.setColor(fail_colour);
