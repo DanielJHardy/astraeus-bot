@@ -9,7 +9,7 @@ module.exports = {
 			status: 'online',
 			activity: {
 				name: 'for OCE VRML queries',
-				type: 'LISTENING'
+				type: 'WATCHING'
 			}
 		});
 
