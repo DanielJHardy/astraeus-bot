@@ -29,6 +29,9 @@ for (const file of eventFiles) {
 	}
 }
 
+//log errors instead of crashing
+client.on('error', (error) => console.error(error));
+
 //load commands
 client.commands = new Discord.Collection();
 const commandFolders = fs.readdirSync('./commands');
