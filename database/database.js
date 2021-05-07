@@ -3,9 +3,9 @@ const fileSystem = require('fs');
 const databasePath = './database/database.json';
 
 const databaseTeplate = {
-    guilds: {},
-    teams: {},
-    streamers: {}
+    guilds: [],
+    teams: [],
+    streamers: []
 }
 
 module.exports = class Database { //TODO: use MySQL
