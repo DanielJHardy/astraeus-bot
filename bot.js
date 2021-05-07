@@ -8,7 +8,8 @@ const VRMLscraper = require('./utility/vrmlscraper');
 const SlashCommandsHandler = require('./utility/slashcommandshandler');
 
 //create http server. just so that it works on heroku??
-http.createServer().listen(3000);
+const port = process.env.PORT || 3000;
+http.createServer().listen(port);
 
 // create a new Discord client
 const client = new Discord.Client();

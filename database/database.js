@@ -2,6 +2,12 @@ const fileSystem = require('fs');
 
 const databasePath = './database/database.json';
 
+const databaseTeplate = {
+    guilds: {},
+    teams: {},
+    streamers: {}
+}
+
 module.exports = class Database { //TODO: use MySQL
     tables;
 
@@ -30,7 +36,7 @@ module.exports = class Database { //TODO: use MySQL
 
     load()
     {
-        if(!fileSystem.existsSync(databasePath)) fileSystem.writeFileSync(databasePath, "{}"); //create file if doesn't exist
+        if(!fileSystem.existsSync(databasePath)) fileSystem.writeFileSync(databasePath, JSON.stringify(databaseTeplate)); //create file if doesn't exist
         this.tables = JSON.parse(fileSystem.readFileSync(databasePath)); //load from file
     }
 }
