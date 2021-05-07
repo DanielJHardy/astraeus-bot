@@ -30,7 +30,7 @@ module.exports = class Database { //TODO: use MySQL
 
     load()
     {
-        if(!fileSystem.existsSync(databasePath)) this.save();
+        if(!fileSystem.existsSync(databasePath)) fileSystem.writeFileSync(databasePath, "{}"); //save back to file
         this.tables = JSON.parse(fileSystem.readFileSync(databasePath)); //load from file
     }
 }
