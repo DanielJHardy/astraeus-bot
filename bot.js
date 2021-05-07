@@ -1,11 +1,14 @@
 const Discord = require('discord.js');
 const fs = require('fs');
 const dotenv = require('dotenv').config();
+const http = require('http');
 
 const Database = require('./database/database.js');
 const VRMLscraper = require('./utility/vrmlscraper');
 const SlashCommandsHandler = require('./utility/slashcommandshandler');
 
+//create http server. just so that it works on heroku??
+http.createServer().listen(3000);
 
 // create a new Discord client
 const client = new Discord.Client();
