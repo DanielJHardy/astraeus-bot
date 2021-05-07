@@ -4,6 +4,15 @@ module.exports = {
 	execute(client) {
 		console.log(`Ready! Logged in as ${client.user.tag}`);
 
+		//set status
+		client.user.setPresence({
+			status: 'online',
+			activity: {
+				name: 'for OCE VRML queries',
+				type: 'LISTENING'
+			}
+		});
+
 		//add / update slash commands
 		const testing = true;
 		if(testing)

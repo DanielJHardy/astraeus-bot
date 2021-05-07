@@ -14,15 +14,6 @@ http.createServer().listen(port);
 // create a new Discord client
 const client = new Discord.Client();
 
-//set status
-client.user.setPresence({
-	status: 'online',
-	activity: {
-		name: 'for OCE VRML queries',
-		type: 'LISTENING'
-	}
-})
-
 //load config variables
 const { prefix, homeGuild } = require('./config.json');
 client.prefix = prefix;
