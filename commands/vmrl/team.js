@@ -9,31 +9,11 @@ module.exports = {
     description: "Gets a VRML team's information",
     options: [
       {
-        type: 1,
-        name: "byName",
-        description: "Displays a VRML team",
-        options: [
-            {
-                type: 3,
-                name: "name",
-                description: "The name of the VRML team",
-                required: true
-            }
-        ]
-      },
-      {
-        type: 1,
-        name: "byPlayer",
-        description: "Displays the VRML team of a player",
-        options: [
-            {
-                "name": "player",
-                "description": "The name of the player",
-                "type": 3,
-                "required": true,
-            },
-        ]
-      },
+            type: 3,
+            name: "name",
+            description: "The name of the VRML team",
+            required: true
+      }
     ],
 
     createTeamEmbed(team, client) {
@@ -83,10 +63,11 @@ module.exports = {
     {
         client.slashCMDs.DeferResponse({}, interaction);
 
-        this.executeTeamName(interaction, args, client);
+        //get team by teamName
+        this.executeByName(interaction, args, client);
     },
 
-    async executeTeamName(interaction, args, client)
+    async executeByName(interaction, args, client)
     {
         let teamLink = null;
         const teamName = args.name;
@@ -128,4 +109,4 @@ module.exports = {
         const embed = this.createTeamEmbed(team, client);
         client.slashCMDs.EditResponse({ embeds: [embed]}, interaction);
     }
-};
+}

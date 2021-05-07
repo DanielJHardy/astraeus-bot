@@ -145,7 +145,7 @@ module.exports = {
         {
             if(args.top.amount) //amount specified
             {
-                this.executeTopN(interaction, args.top.amount, client);
+                this.executeTopN(interaction, Math.abs(args.top.amount), client);
             }
             else{   //default amount
                 this.executeTopN(interaction, DEFAULT_NUM_STANDINGS, client);
