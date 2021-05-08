@@ -11,6 +11,10 @@ const SlashCommandsHandler = require('./utility/slashcommandshandler');
 const port = process.env.PORT || 3000;
 http.createServer().listen(port);
 
+//make sure it doesn't sleep
+const FIFTEEN_MINUTES = 900000;
+if(process.env.HEROKUAPP) setInterval( () => {http.get(`http://${process.env.HEROKUAPP}.herokuapp.com`)}, FIFTEEN_MINUTES);
+
 // create a new Discord client
 const client = new Discord.Client();
 
