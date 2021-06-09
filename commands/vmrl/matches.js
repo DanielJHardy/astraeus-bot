@@ -131,7 +131,7 @@ module.exports = {
     async executeTeam(interaction, teamName, client) {
 
         //check if team is in database
-        const team = client.database.getTeam(teamName);
+        const team = await client.database.getTeam(teamName);
         if(team)    //no need to scrape team link
         {           
             const matches = await client.scraper.scrape_Matches_team(team.link);
