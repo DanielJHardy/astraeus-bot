@@ -73,12 +73,12 @@ module.exports = {
         const teamName = args.name;
 
         //get team link from storage if have it and use that
-        const db_team = client.database.getTeam(teamName);
+        const db_team = await client.database.getTeam(teamName);
         if(db_team) teamLink = db_team.link;
         else
         {
             //otherwise get from standings page
-            const teamInfo = await client.scraper.scrape_TeamInfo_standings(teamName)//this.scrapeTeamLink(body, teamName);
+            const teamInfo = await client.scraper.scrape_TeamInfo_standings(teamName);
             if(teamInfo === null) {
                 client.slashCMDs.EditResponse(
                     {
@@ -90,17 +90,19 @@ module.exports = {
             teamLink = teamInfo.link;
         }
 
+        console.log(`teamLink: ${teamLink}`);
         //get team data from team page
-        const team = await client.scraper.scrape_TeamData_team(teamLink);
+        const team = await client.scraper.scrape_TeamData_team(teamLink, client.database);
 
         //add to database if doesnt exist
-        let teamData = client.database.getTeam(team.name);
-        if (!teamData)
+        //let teamData = await client.database.getTeam(team.name);
+        if (!db_team)
         {
             teamData = {
                 name: team.name,
                 link: team.page_link,
-                discord: team.discord_link
+                discord: team.discord_link,
+                members: team.players
             };
             client.database.addTeam(teamData);
         }

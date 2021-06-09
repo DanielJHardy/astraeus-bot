@@ -1,5 +1,6 @@
 const request = require('./await-request');
 const cheerio = require('cheerio');
+const cheerioModule = require('cheerio');
 
 module.exports = class VRMLscraper {
     
@@ -112,6 +113,14 @@ module.exports = class VRMLscraper {
         return matches;
     };
 
+    async scrape_DiscordTag_players(playerLink)
+    {
+        const page = await request(`${VRMLscraper.domain}${playerLink}`);
+        let $ = cheerio.load(page);
+
+        return $('.player-bio-header-table-left tr:last-child > td:last-child').first().text();
+    }
+
     async scrape_Matches_team(teamLink)
     {
         const page = await request(`${VRMLscraper.domain}${teamLink}`);
@@ -151,7 +160,7 @@ module.exports = class VRMLscraper {
         return matches;
     };
 
-    async scrape_TeamData_team(teamLink)
+    async scrape_TeamData_team(teamLink, db)
     {
         const page = await request(`${VRMLscraper.domain}${teamLink}`);
         const $ = cheerio.load(page);
@@ -191,13 +200,38 @@ module.exports = class VRMLscraper {
             const rankRaw = $(playerSelector).find('.team_capt').attr('title');
             const rankIndicator = rankMap[rankRaw];
 
+            const playerLink = $(playerSelector).find('a').first().attr('href');
+            const playerID = playerLink.substring(19);
+
             //get player stuff
             const player = {
                 rank: rankIndicator,
                 name: $(playerSelector).find('.player_name').first().text(),
                 location: $(playerSelector).find('.flag').attr('title'),
-                link: $(playerSelector).find('a').first().attr('href')
+                link: playerLink,
             };
+
+            //get discordTag from server or vrml page
+            let db_player = await db.getPlayer(playerID);
+
+            //add to database
+            if(db_player == null)
+            {
+                const discordTag = await this.scrape_DiscordTag_players(playerLink);
+
+                db_player = {
+                    id: playerLink.substring(19),
+                    name: player.name,
+                    team: teamLink.substring(17),
+                    discordTag: discordTag,
+                    rank: rankIndicator,
+                    location: player.location
+                }
+
+                db.addPlayer(db_player);
+            }
+
+            player.discordTag = db_player.discordTag;
 
             players.push(player);
         }
