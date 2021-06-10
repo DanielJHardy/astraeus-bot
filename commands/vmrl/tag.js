@@ -34,7 +34,11 @@ module.exports = {
             console.log(player.discordTag);
             //const playerDiscordID = client.users.cache.find(u => u.tag === player.discordTag).id;
             const member = guild.members.cache.find(m => m.user.tag === player.discordTag);
-            if(!member) continue; //not found
+            if(!member)
+            {
+                content += `\`${player.discordTag}\` `;
+                continue;
+            }
 
             const playerDiscordID = member.user.id;
             
