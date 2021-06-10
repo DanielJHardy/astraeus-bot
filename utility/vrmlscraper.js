@@ -223,7 +223,7 @@ module.exports = class VRMLscraper {
                     id: playerLink.substring(19),
                     name: player.name,
                     team: teamLink.substring(17),
-                    discordTag: discordTag,
+                    discordtag: discordTag,
                     rank: rankIndicator,
                     location: player.location
                 }
@@ -231,7 +231,7 @@ module.exports = class VRMLscraper {
                 db.addPlayer(db_player);
             }
 
-            player.discordTag = db_player.discordTag;
+            player.discordTag = db_player.discordtag;
 
             players.push(player);
         }

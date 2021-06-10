@@ -102,7 +102,7 @@ module.exports = {
                 name: team.name,
                 link: team.page_link,
                 discord: team.discord_link,
-                members: team.players
+                members: team.members
             };
             client.database.addTeam(teamData);
         }

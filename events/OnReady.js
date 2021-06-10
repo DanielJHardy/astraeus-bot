@@ -21,7 +21,7 @@ module.exports = {
 
 			for (command of client.commands) 
 			{
-				//if(command[1].name == 'team') client.slashCMDs.AddCommand(command[1]);
+				//if(command[1].name == 'tag') client.slashCMDs.AddCommand(command[1]);
 
 				if(!command[1].global) //if command structure hasnt already been finalized
 				{ 
